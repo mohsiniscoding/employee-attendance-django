@@ -1,0 +1,29 @@
+{% extends "attendance/base.html" %}
+{% load static %}
+
+{% block title %}
+Employee Attendance | Marked
+{% endblock title %}
+
+{% block head %}
+
+{% endblock head %}
+
+{% block content %}
+<div class="flex flex-col h-screen justify-center items-center">
+<h1 class="text-2xl text-center py-6">Attendance Marked Successfully!</h1>
+    <div class="w-[500px] h-min p-6 bg-white border border-gray-200 rounded-lg shadow flex justify-center">
+            <dotlottie-player src="https://lottie.host/2f86cb2f-2319-480b-a1c3-afc0e016b8d0/3PegRoRM5c.json" background="transparent" speed="1" style="width: 300px; height: 300px;" loop autoplay></dotlottie-player>
+    </div>
+</div>
+{% endblock content %}
+
+{% block js %}
+<script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script> 
+<script>
+// redirect to the attendance page after 3 seconds
+setTimeout(() => {
+    window.location = "{% url 'attendance' %}";
+}, 3000);
+</script>
+{% endblock js %}

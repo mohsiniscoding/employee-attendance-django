@@ -1,0 +1,79 @@
+{% extends "attendance/base.html" %}
+{% load static %}
+
+{% block title %}
+Employee Attendance | Scan Card
+{% endblock title %}
+
+{% block head %}
+<style>
+#html5-qrcode-button-camera-permission {
+    background-color: blue;
+    color: white;
+    padding: 5px 8px;
+    border-radius: 20px;
+}
+</style>
+{% endblock head %}
+
+{% block content %}
+<div class="flex flex-col h-screen justify-center items-center">
+<h1 class="text-2xl text-center py-6">SCAN YOUR ID CARD</h1>
+    <div class="w-[500px] h-min p-6 bg-white border border-gray-200 rounded-lg shadow ">
+        <div id="reader" width="600px"></div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block js %}
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script
+  src="https://code.jquery.com/jquery-3.7.1.min.js"
+  integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+  crossorigin="anonymous"></script>
+<script>
+
+function onScanSuccess(decodedText, decodedResult) {
+  // handle the scanned code as you like, for example:
+  console.log(`Code matched = ${decodedText}`, decodedResult);
+  if(decodedResult.result.format.formatName === "QR_CODE") {
+    console.log('Sending request')
+    $.ajax({
+      type: "POST",
+      url: "{% url 'attendance' %}",  // Replace with your actual endpoint URL
+      data: {
+        text: decodedText,
+        csrfmiddlewaretoken: '{{ csrf_token }}'  // Ensure you include the CSRF token for security
+      },
+      success: function(response) {
+        // Handle success, maybe show a message to the user
+        if (response.success){
+          window.location.href = "{% url 'attendance_marked' %}";
+        } else {
+          alert(response.message);
+        }
+      },
+      error: function(xhr, status, error) {
+        // Handle error, maybe show a message to the user
+        console.error("Error marking attendance:", error);
+        alert("Error marking attendance. Please try again.");
+      },
+      complete: function(data){
+        html5QrcodeScanner.resume()
+      }
+    });
+  }
+}
+
+function onScanFailure(error) {
+  // handle scan failure, usually better to ignore and keep scanning.
+  // for example:
+}
+
+let html5QrcodeScanner = new Html5QrcodeScanner(
+  "reader",
+  { fps: 10, qrbox: {width: 250, height: 250} },
+  /* verbose= */ false);
+html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+</script>
+{% endblock js %}

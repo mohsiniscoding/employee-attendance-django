@@ -1,0 +1,55 @@
+{% load static tailwind_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}
+    
+    {% endblock title %}</title>
+    {% tailwind_css %}
+    {% block head %}
+    
+    {% endblock head %}
+</head>
+<body class="bg-slate-100">
+    <header>
+        <nav class="bg-white shadow">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div class="flex h-16 justify-between">
+                <div class="flex">
+                  <div class="flex flex-shrink-0 items-center">
+                    <img class="h-8 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="Your Company">
+                  </div>
+                </div>
+                {% if request.user.is_authenticated %}
+                    <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" type="button" class="relative rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                <span class="absolute -inset-1.5"></span>
+                                <span class="sr-only">View notifications</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 3v9" />
+                                </svg>                      
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+          
+            
+          </nav>
+          
+    </header>
+    {% block content %}
+
+    {% endblock content %}
+
+    {% block js %}
+    
+    {% endblock js %}
+    <div class="sticky bottom-0 text-small text-center">Powered by <a target="_blank" class="text-blue-500 underline" href="https://www.fiverr.com/mohsin_rizz">Mohsin Raza</a></div>
+</body>
+</html>
