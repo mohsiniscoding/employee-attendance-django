@@ -5,9 +5,9 @@ from django.core.exceptions import ValidationError
 from apps.employee.card_utils import get_id_card_photo
 
 def validate_image(image):
-    if image.file.size > 2 * 1024 * 1024:
+    if image.size > 2 * 1024 * 1024:
         raise ValidationError('Image file too large ( > 2mb )')
-    if image.file.name.split('.')[-1] not in ['jpg', 'jpeg']:
+    if image.name.split('.')[-1].lower() not in ['jpg', 'jpeg']:
         raise ValidationError('Image file type not supported. Only JPEG and PNG files are accepted.')
 
 class Employee(models.Model):
