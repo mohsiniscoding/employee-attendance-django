@@ -1,8 +1,9 @@
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.contrib.auth.models import User, Group
 from django.urls import reverse
 from django.conf import settings
-from unittest.mock import patch, MagicMock
+from django.core.files.base import ContentFile
+from unittest.mock import patch
 from io import BytesIO
 from PIL import Image
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -32,10 +33,8 @@ class AttendanceModelTest(TestCase):
     @patch('apps.employee.models.get_id_card_photo')
     def test_create_attendance(self, mock_get_id_card):
         """Test creating an attendance record"""
-        # Mock ID card generation
-        mock_id_card = MagicMock()
-        mock_id_card.read.return_value = b'fake_id_card_data'
-        mock_get_id_card.return_value = mock_id_card
+        # Mock ID card generation to return a ContentFile
+        mock_get_id_card.return_value = ContentFile(b'fake_id_card_data')
 
         # Create an employee
         photo = self.create_test_image_file()
@@ -62,9 +61,8 @@ class AttendanceModelTest(TestCase):
     @patch('apps.employee.models.get_id_card_photo')
     def test_attendance_default_status(self, mock_get_id_card):
         """Test that attendance has default status of UNKNOWN"""
-        mock_id_card = MagicMock()
-        mock_id_card.read.return_value = b'fake_id_card_data'
-        mock_get_id_card.return_value = mock_id_card
+        # Mock ID card generation to return a ContentFile
+        mock_get_id_card.return_value = ContentFile(b'fake_id_card_data')
 
         photo = self.create_test_image_file()
         employee = Employee.objects.create(
@@ -84,9 +82,8 @@ class AttendanceModelTest(TestCase):
     @patch('apps.employee.models.get_id_card_photo')
     def test_attendance_str_representation(self, mock_get_id_card):
         """Test the string representation of attendance"""
-        mock_id_card = MagicMock()
-        mock_id_card.read.return_value = b'fake_id_card_data'
-        mock_get_id_card.return_value = mock_id_card
+        # Mock ID card generation to return a ContentFile
+        mock_get_id_card.return_value = ContentFile(b'fake_id_card_data')
 
         photo = self.create_test_image_file()
         employee = Employee.objects.create(
@@ -108,9 +105,8 @@ class AttendanceModelTest(TestCase):
     @patch('apps.employee.models.get_id_card_photo')
     def test_attendance_status_choices(self, mock_get_id_card):
         """Test all attendance status choices"""
-        mock_id_card = MagicMock()
-        mock_id_card.read.return_value = b'fake_id_card_data'
-        mock_get_id_card.return_value = mock_id_card
+        # Mock ID card generation to return a ContentFile
+        mock_get_id_card.return_value = ContentFile(b'fake_id_card_data')
 
         photo = self.create_test_image_file()
         employee = Employee.objects.create(
@@ -146,9 +142,8 @@ class AttendanceModelTest(TestCase):
     @patch('apps.employee.models.get_id_card_photo')
     def test_attendance_cascade_delete(self, mock_get_id_card):
         """Test that attendance is deleted when employee is deleted"""
-        mock_id_card = MagicMock()
-        mock_id_card.read.return_value = b'fake_id_card_data'
-        mock_get_id_card.return_value = mock_id_card
+        # Mock ID card generation to return a ContentFile
+        mock_get_id_card.return_value = ContentFile(b'fake_id_card_data')
 
         photo = self.create_test_image_file()
         employee = Employee.objects.create(
@@ -174,6 +169,7 @@ class AttendanceModelTest(TestCase):
         self.assertFalse(Attendance.objects.filter(id=attendance_id).exists())
 
 
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
 class AttendanceViewTest(TestCase):
     """Tests for the AttendanceView"""
 
@@ -223,9 +219,8 @@ class AttendanceViewTest(TestCase):
     def test_attendance_view_post_valid_qr(self, mock_get_id_card):
         """Test posting valid QR code data"""
         # Mock ID card generation
-        mock_id_card = MagicMock()
-        mock_id_card.read.return_value = b'fake_id_card_data'
-        mock_get_id_card.return_value = mock_id_card
+        # Mock ID card generation to return a ContentFile
+        mock_get_id_card.return_value = ContentFile(b'fake_id_card_data')
 
         # Create an employee
         photo = self.create_test_image_file()
@@ -323,6 +318,7 @@ class AttendanceViewTest(TestCase):
         self.assertIn('/login/', response.url)
 
 
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
 class CustomLoginViewTest(TestCase):
     """Tests for the CustomLoginView"""
 
@@ -359,6 +355,7 @@ class CustomLoginViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
 
 
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
 class AttendanceMarkedViewTest(TestCase):
     """Tests for the AttendanceMarkedView"""
 
@@ -387,6 +384,7 @@ class AttendanceMarkedViewTest(TestCase):
         self.assertIn('/login/', response.url)
 
 
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
 class AttendanceGroupRequiredMixinTest(TestCase):
     """Tests for the AttendanceGroupRequiredMixin"""
 

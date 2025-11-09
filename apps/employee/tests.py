@@ -1,8 +1,9 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.files.base import ContentFile
 from django.db import IntegrityError
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from io import BytesIO
 from PIL import Image
 
@@ -93,10 +94,8 @@ class EmployeeModelTest(TestCase):
     @patch('apps.employee.models.get_id_card_photo')
     def test_create_employee_success(self, mock_get_id_card):
         """Test creating an employee with valid data"""
-        # Mock the ID card generation
-        mock_id_card = MagicMock()
-        mock_id_card.read.return_value = b'fake_id_card_data'
-        mock_get_id_card.return_value = mock_id_card
+        # Mock the ID card generation to return a ContentFile
+        mock_get_id_card.return_value = ContentFile(b'fake_id_card_data')
 
         photo = self.create_test_image_file()
 
@@ -123,9 +122,8 @@ class EmployeeModelTest(TestCase):
     @patch('apps.employee.models.get_id_card_photo')
     def test_employee_str_representation(self, mock_get_id_card):
         """Test the string representation of an employee"""
-        mock_id_card = MagicMock()
-        mock_id_card.read.return_value = b'fake_id_card_data'
-        mock_get_id_card.return_value = mock_id_card
+        # Mock the ID card generation to return a ContentFile
+        mock_get_id_card.return_value = ContentFile(b'fake_id_card_data')
 
         photo = self.create_test_image_file()
 
@@ -143,9 +141,8 @@ class EmployeeModelTest(TestCase):
     @patch('apps.employee.models.get_id_card_photo')
     def test_employee_unique_email(self, mock_get_id_card):
         """Test that employee emails must be unique"""
-        mock_id_card = MagicMock()
-        mock_id_card.read.return_value = b'fake_id_card_data'
-        mock_get_id_card.return_value = mock_id_card
+        # Mock the ID card generation to return a ContentFile
+        mock_get_id_card.return_value = ContentFile(b'fake_id_card_data')
 
         photo1 = self.create_test_image_file('test1.jpg')
         photo2 = self.create_test_image_file('test2.jpg')
@@ -174,9 +171,8 @@ class EmployeeModelTest(TestCase):
     @patch('apps.employee.models.get_id_card_photo')
     def test_employee_id_card_generation_on_save(self, mock_get_id_card):
         """Test that ID card is generated when employee is saved"""
-        mock_id_card = MagicMock()
-        mock_id_card.read.return_value = b'fake_id_card_data'
-        mock_get_id_card.return_value = mock_id_card
+        # Mock the ID card generation to return a ContentFile
+        mock_get_id_card.return_value = ContentFile(b'fake_id_card_data')
 
         photo = self.create_test_image_file()
 
@@ -196,9 +192,8 @@ class EmployeeModelTest(TestCase):
     @patch('apps.employee.models.get_id_card_photo')
     def test_employee_fields_max_length(self, mock_get_id_card):
         """Test that employee fields respect max_length constraints"""
-        mock_id_card = MagicMock()
-        mock_id_card.read.return_value = b'fake_id_card_data'
-        mock_get_id_card.return_value = mock_id_card
+        # Mock the ID card generation to return a ContentFile
+        mock_get_id_card.return_value = ContentFile(b'fake_id_card_data')
 
         photo = self.create_test_image_file()
 
@@ -240,29 +235,27 @@ class CardUtilsTest(TestCase):
         self.assertGreater(width, 0)
         self.assertGreater(height, 0)
 
-    @patch('apps.employee.models.get_id_card_photo')
-    def test_get_id_card_photo_returns_content_file(self, mock_get_id_card):
+    def test_get_id_card_photo_returns_content_file(self):
         """Test that get_id_card_photo returns a ContentFile"""
-        from django.core.files.base import ContentFile
+        # Create a simple mock object for the employee
+        class MockEmployee:
+            first_name = 'Test'
+            last_name = 'User'
+            designation = 'Tester'
+            email = 'test@example.com'
 
-        # Create a mock employee
-        mock_employee = MagicMock()
-        mock_employee.first_name = 'Test'
-        mock_employee.last_name = 'User'
-        mock_employee.designation = 'Tester'
-        mock_employee.email = 'test@example.com'
+            def __init__(self):
+                # Create a test image for the employee photo
+                image = Image.new('RGB', (200, 200), color='green')
+                image_io = BytesIO()
+                image.save(image_io, format='JPEG')
+                image_io.seek(0)
+                self.photo = image_io
 
-        # Create a test image for the employee photo
-        image = Image.new('RGB', (200, 200), color='green')
-        image_io = BytesIO()
-        image.save(image_io, format='JPEG')
-        image_io.seek(0)
-        mock_employee.photo = image_io
+        mock_employee = MockEmployee()
 
-        # Call the actual function (not mocked)
-        mock_get_id_card.side_effect = lambda instance: get_id_card_photo(instance)
-
-        result = mock_get_id_card(mock_employee)
+        # Call the actual function
+        result = get_id_card_photo(mock_employee)
 
         # Verify it returns a ContentFile
         self.assertIsInstance(result, ContentFile)
