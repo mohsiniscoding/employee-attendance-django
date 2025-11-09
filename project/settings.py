@@ -62,21 +62,38 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3.S3Storage",
-        "OPTIONS": {
-          'access_key': os.getenv('AWS_ACCESS_KEY'),
-          'secret_key': os.getenv('AWS_SECRET_KEY'),
-          'bucket_name': os.getenv('AWS_BUCKET_NAME'),
-          'region_name': os.getenv('AWS_REGION_NAME'),
-          'file_overwrite': False,
+import sys
+
+# Check if we're running tests
+TESTING = 'test' in sys.argv
+
+if TESTING:
+    # Use filesystem storage for testing
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
         },
-    },
-    'staticfiles': {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+        'staticfiles': {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+else:
+    # Use S3 storage for production/development
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3.S3Storage",
+            "OPTIONS": {
+              'access_key': os.getenv('AWS_ACCESS_KEY'),
+              'secret_key': os.getenv('AWS_SECRET_KEY'),
+              'bucket_name': os.getenv('AWS_BUCKET_NAME'),
+              'region_name': os.getenv('AWS_REGION_NAME'),
+              'file_overwrite': False,
+            },
+        },
+        'staticfiles': {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 ROOT_URLCONF = 'project.urls'
 

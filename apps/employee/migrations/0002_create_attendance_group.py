@@ -9,13 +9,25 @@ def create_attendance_group(apps, schema_editor):
     Create attendance account group if not exists `settings.ATTENDANCE_ACCOUNT_GROUP`
     with add_attendance permission.
     """
-    Group.objects.get_or_create(name=settings.ATTENDANCE_ACCOUNT_GROUP)
+    Group = apps.get_model('auth', 'Group')
+    Permission = apps.get_model('auth', 'Permission')
+    ContentType = apps.get_model('contenttypes', 'ContentType')
+
+    attendance_group, created = Group.objects.get_or_create(name=settings.ATTENDANCE_ACCOUNT_GROUP)
 
     ## add permission to group
-    attendance_group = Group.objects.get(name=settings.ATTENDANCE_ACCOUNT_GROUP)
-    attendance_group.permissions.add(
-        Permission.objects.get(codename='add_attendance')
-    )
+    try:
+        # Get the content type for Attendance model
+        attendance_content_type = ContentType.objects.get(app_label='attendance', model='attendance')
+        # Get the add_attendance permission
+        permission = Permission.objects.get(
+            codename='add_attendance',
+            content_type=attendance_content_type
+        )
+        attendance_group.permissions.add(permission)
+    except (Permission.DoesNotExist, ContentType.DoesNotExist):
+        # Permission doesn't exist yet, skip adding it
+        pass
 
 
 class Migration(migrations.Migration):
@@ -24,6 +36,8 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('employee', '0001_initial'),
+        ('attendance', '0001_initial'),  # Ensure attendance model exists before adding permissions
+        ('contenttypes', '0001_initial'),  # Ensure ContentType is available
     ]
 
     operations = [
